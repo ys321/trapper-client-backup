@@ -1,0 +1,59 @@
+[
+    {
+        "type": "bool",
+        "title": "Verify SSL",
+        "desc": "Verify SSL certificates when establishing a secure connection to TRAPPER server (it can be switched-off if you use custom certificates and you trust your server provider)",
+        "section": "trapper-client",
+        "key": "verify_ssl" 
+    },
+    {
+        "type": "bool",
+        "title": "FTP TLS",
+        "desc": "Use secure TLS mode for FTP(S) connection",
+        "section": "trapper-client",
+        "key": "ftp_tls" 
+    },
+    {
+        "type": "bool",
+        "title": "FTP passive",
+        "desc": "Use passive mode for FTP connection",
+        "section": "trapper-client",
+        "key": "ftp_passive" 
+    },
+    {
+        "type": "string",
+        "title": "FTP host",
+        "desc": "External FTP host address",
+        "section": "trapper-client",
+        "key": "ftp_host"
+    },
+    {
+        "type": "string",
+        "title": "FTP login",
+        "desc": "External FTP login",
+        "section": "trapper-client",
+        "key": "ftp_login"
+    },
+    {
+        "type": "string",
+        "title": "FTP password",
+        "desc": "External FTP password",
+        "section": "trapper-client",
+        "key": "ftp_pass"
+    },
+    {
+        "type": "string",
+        "title": "Image extensions",
+        "desc": "Comma separated list of image extensions e.g. jpg,jpeg,png...",
+        "section": "trapper-client",
+        "key": "image_ext"
+    },
+    {
+        "type": "string",
+        "title": "Video extensions",
+        "desc": "Comma separated list of video extensions e.g. avi,mp4,webm...",
+        "section": "trapper-client",
+        "key": "video_ext"
+    }
+]
+

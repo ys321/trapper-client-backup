@@ -1,0 +1,842 @@
+# BEGIN IMPORTS
+#: import F kivy.factory.Factory
+#: import webbrowser webbrowser
+# END IMPORTS
+
+### ---------------------------------------------------------- ###
+### THE HELPER WIDGETS
+### ---------------------------------------------------------- ###
+
+<Separator@Widget>:
+    rgba: 1, 1, 1, 1
+    canvas:
+        Color:
+            rgba: self.rgba
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+<HSeparator@Separator>:
+    size_hint_y: None
+    height: dp(2)
+
+<VSeparator@Separator>:
+    size_hint_x: None
+    width: dp(2)
+    
+<LoadingPopup>:
+    auto_dismiss: False
+    title: root.title
+    title_size: 32
+    size_hint: .5, .5
+    BoxLayout:
+        orientation: "vertical"
+        AnchorLayout:
+            Image:
+                size_hint: None, None
+                size: 80, 80
+                source: "img/spinner.gif"
+        Button:
+            size_hint_y: 0.1
+            text: "Close"
+            on_release: root.dismiss()
+            
+<InfoPopup>:
+    auto_dismiss: False
+    title: "Info"
+    title_size: 32
+    size_hint: .5, .5
+    BoxLayout:
+        orientation: "vertical"
+        Label:
+            markup: True
+            bold: True
+            valign: "top"
+            halign: "center"
+            text_size: self.size
+            font_size: "20"
+            text: root.message
+        Button:
+            size_hint_y: 0.1
+            text: "Close"
+            on_release: root.dismiss()
+
+<InfoPopupFileContent>:
+    auto_dismiss: False
+    title: root.title
+    title_size: 32
+    size_hint: .8, .6
+    BoxLayout:
+        orientation: "vertical"
+        Label:
+            size_hint_y: 0.2
+            markup: True
+            bold: True
+            valign: "top"
+            halign: "left"
+            text_size: self.size
+            font_size: "16"
+            text: root.message
+        ScrollView:
+            size_hint_y: 0.7
+            canvas:
+                Color:
+                    rgba: 0, 0.4, 0.5, 0.5
+                Rectangle:
+                    size: self.size
+                    pos: self.pos
+            TextInput:
+                height: self.minimum_height
+                size_hint_y: None
+                readonly: True
+                text: root.file_content
+        Button:
+            size_hint_y: 0.1
+            text: "Close"
+            on_release: root.dismiss()
+            
+<SettingsInput@TextInput>:
+    write_tab: False
+    multiline: False
+    font_size: "24"
+    padding: [dp(10), self.height / dp(2.0) - (self.line_height / dp(2.0)) * len(self._lines), 0, 0]
+ 
+<SettingsLabel@Label>:
+    markup: True
+    size_hint_x: None
+    width: dp(120)
+    font_size: "18"
+
+<LinkLabel@ButtonBehavior+Label>:
+    on_release: webbrowser.open(self.text)
+
+<LabelTrapperCon>:    
+    size_hint_y: 0.1
+    id: label_trapper_con
+    # Image:
+    #     size_hint: None, None
+    #     size: 50, 50
+    #     source: root.image_path
+    Label:
+        markup: True
+        bold: True
+        font_size: "30"        
+        valign: "top"
+        halign: "center"
+        text: root.text
+
+<LCheckBox@CheckBox>:
+    size_hint_x: None
+    width: dp(50)
+    canvas.before:
+        Rectangle:
+            pos:self.center_x-8, self.center_y-8
+            size:[26,26]
+
+<SelectableLabel>:
+    font_size: "18"
+    # Draw a background to indicate selection
+    canvas.before:
+        Color:
+            rgba: (.0, 0.9, .1, .3) if self.selected else (0.3, 0.3, 0.3, 1)
+        Rectangle:
+            pos: self.pos
+            size: self.size
+        
+<TCRecycleView@RecycleView>:
+    selected: []    
+    scroll_type: ["bars", "content"]
+    scroll_wheel_distance: dp(25)
+    bar_width: dp(20)
+    viewclass: "SelectableLabel"
+    SelectableRecycleBoxLayout:
+        default_size: None, dp(25)
+        default_size_hint: 0.5, None
+        size_hint_y: None
+        height: self.minimum_height
+        orientation: "vertical"
+        spacing: dp(2)
+        multiselect: True
+        touch_multiselect: True
+
+            
+### ---------------------------------------------------------- ###
+### THE HOMEPAGE & AND THE OTHER SCREENS
+### ---------------------------------------------------------- ###
+
+
+<Menu>:
+    manager: screen_manager
+    orientation: "vertical"
+    ActionBar:
+        size_hint_y: 0.05
+        ActionView:
+            use_separator: True
+            ActionPrevious:
+                title: "Trapper Client"
+                with_previous: False
+                # app_icon: "img/logo.png"
+            ActionButton:
+                text: "Home"
+                on_release: root.manager.current = "main"
+            ActionButton:
+                text:"Convert"
+                on_release:
+                    root.manager.transition.direction = "right"
+                    root.manager.current = "convert"
+            ActionButton:
+                text:"Package"
+                on_release:
+                    root.manager.transition.direction = "right"
+                    root.manager.current = "package"
+            ActionButton:
+                text:"Upload"
+                on_release:
+                    root.manager.transition.direction = "right"
+                    root.manager.current = "upload"
+            ActionButton:
+                text:"Settings"
+                on_release:
+                    root.manager.transition.direction = "left"
+                    root.manager.current = "settings"
+            ActionButton:
+                text: "Quit"
+                on_press:
+                    app.stop()
+    TrapperClientScreenManager:
+        id: screen_manager
+
+
+### ---------------------------------------------------------- ###
+### THE MAIN SCREEN
+### ---------------------------------------------------------- ###
+
+        
+<MainScreen>:
+    name: "screen_main"
+    id: screen_main
+    BoxLayout:
+        orientation: "vertical"
+        Label:
+            size_hint_y: 0.2
+            markup: True
+            bold: True
+            valign: "top"
+            halign: "center"
+            text_size: self.size
+            text: "[size=40]Welcome to Trapper Client![/size]\n[size=20]camera trap data package generation app\n\nStart by checking your [color=37abc8ff]SETTINGS[/color][/size]"
+        Image:
+            size_hint_y: 0.4
+            source: "img/homepage.jpeg"
+        LabelTrapperCon:
+            trapper_loggedin: root.manager.trapper_loggedin    
+        Label:
+            size_hint_y: 0.2
+            markup: True
+            valign: "top"
+            halign: "center"
+            text: "[size=20]trapper login: [color=37abc8ff]{login}[/color]\ntrapper host: [color=37abc8ff][ref={host}]{host}[/ref][/color]\nresearch project: [color=37abc8ff]{project}[/color][/size]".format(login=root.manager.trapper_login, host=root.manager.trapper_host, project=root.manager.rproject_acronym)
+            on_ref_press: webbrowser.open(root.manager.trapper_host)
+
+
+### ---------------------------------------------------------- ###
+### THE SETTINGS SCREEN
+### ---------------------------------------------------------- ###
+
+                    
+<SettingsScreen>:
+    name: "screen_settings"
+    id: screen_settings
+    GridLayout:
+        rows: 10
+        BoxLayout:
+            SettingsLabel:
+                text: ""
+            Label:
+                font_size: "30"
+                text: "Trapper server settings"
+        BoxLayout:
+            SettingsLabel:
+                text: "Host"
+            SettingsInput:
+                hint_text: "http(s)//<host>:<port>"
+                id: trapper_host
+                text: root.manager.trapper_host
+                on_text: root.manager.trapper_host = self.text
+        BoxLayout:
+            SettingsLabel:
+                text: "Login"
+            SettingsInput:
+                id: trapper_login
+                text: root.manager.trapper_login
+                on_text: root.manager.trapper_login = self.text
+        BoxLayout:
+            SettingsLabel:
+                text: "Password"
+            SettingsInput:
+                id: trapper_pass
+                password: True
+                text: root.manager.trapper_pass
+                on_text: root.manager.trapper_pass = self.text
+        BoxLayout:
+            SettingsLabel:
+                text: ""
+            Label:
+                font_size: "30"
+                text: "Other settings"
+        BoxLayout:
+            SettingsLabel:
+                text: "Timezone"
+            SettingsInput:
+                size_hint_x: 0.5
+                hint_text: "e.g. Europe/Warsaw"
+                id: timezone
+                text: root.manager.timezone
+            BoxLayout:
+                Label:
+                    text: "Ignore Daylight Saving Time (DST)?"
+                    font_size: "18"
+                Switch:
+                    id: timezone_ignore_dst
+                    size_hint_x: 0.5
+                    active: root.manager.timezone_ignore_dst
+        BoxLayout:
+            SettingsLabel:
+                text: "Project"
+            SettingsInput:
+                size_hint_x: 0.7
+                id: rproject
+                hint_text: "Research project\'s acronym"
+                text: root.manager.rproject_acronym
+                on_text:
+                    root.manager.rproject_id = None
+            Button:
+                size_hint_x: 0.3
+                text: "Check & set as active"
+                on_press:
+                    screen_settings.thread_check_rproject(rproject.text)
+        BoxLayout:
+            SettingsLabel:
+                text: "FFMPEG"
+            SettingsInput:
+                size_hint_x: 0.7
+                id: ffmpeg
+                hint_text: "Path to FFMPEG exe"
+                text: root.manager.ffmpeg_path
+            Button:
+                size_hint_x: 0.1
+                text: "Check"
+                on_press:
+                    screen_settings.thread_check_ffmpeg(ffmpeg.text)
+            Button:
+                size_hint_x: 0.2
+                text: "Download"
+                on_press:
+                    root.manager.show_download_ffmpeg()
+        BoxLayout:
+            SettingsLabel:
+                text: ""
+            Label:
+                font_size: "18"
+                text: "Press F1 to see the advanced settings"
+        BoxLayout:
+            Button:
+                font_size: "22"
+                text: "Save Settings"
+                on_press:
+                    screen_settings.save_settings({
+                    "trapper_host": trapper_host.text, "trapper_login": trapper_login.text, "trapper_pass": trapper_pass.text, "timezone": timezone.text, "timezone_ignore_dst": timezone_ignore_dst.active,  "rproject_acronym": rproject.text, "ffmpeg_path": ffmpeg.text
+                    })
+            Button:
+                font_size: "22"        
+                text: "Connect to Trapper"
+                on_press:
+                    screen_settings.thread_trapper_con(trapper_host.text, trapper_login.text, trapper_pass.text)
+            Button:
+                font_size: "22"        
+                text: "Test FTP connection"
+                on_press:
+                    screen_settings.thread_ftp_con()
+
+                    
+### ---------------------------------------------------------- ###
+### THE CONVERT SCREEN
+### ---------------------------------------------------------- ###
+
+
+<ConvertScreen>:
+    name: "screen_convert"
+    id: screen_convert
+    resize_img: resize_img
+    convert2mp4: convert2mp4
+    convert2webm: convert2webm
+    overwrite: overwrite
+    img_src_ext: img_src_ext_list
+    vid_src_ext: vid_src_ext_list
+
+    # BEGIN GRID
+    GridLayout:
+        rows: 14
+        spacing: dp(10)
+        HSeparator:
+            height: dp(10)
+        Label:
+            text_size: self.size
+            padding: dp(10), dp(10)
+            size_hint_y: 0.1
+            font_size: "30"
+            valign: "top"
+            halign: "left"
+            text: "Convert your media files!"
+        Label:
+            markup: True
+            text_size: self.size
+            padding: dp(10), dp(10)
+            size_hint_y: 0.2
+            size_hint_max_y: dp(100)
+            font_size: "20"
+            valign: "top"
+            halign: "left"
+            text: "There is no tip here. Everything is simple here ;)"
+        HSeparator:
+            height: dp(5)
+        BoxLayout:
+            size_hint_y: 0.1
+            size_hint_max_y: dp(50)
+            SettingsLabel:
+                width: dp(140)
+                text: "Media root"
+            SettingsInput:
+                id: media_root
+                size_hint_x: 0.8
+                text: root.media_root
+                on_text: root.media_root = self.text.replace("\\", "/")
+            Button:
+                size_hint_x: 0.2
+                text: "..."
+                on_release:
+                    screen_convert.show_filechooser("media_root", "Select the media root")
+        BoxLayout:
+            size_hint_y: 0.1
+            size_hint_max_y: dp(50)
+            SettingsLabel:
+                width: dp(140)
+                text: "Output path"
+            SettingsInput:
+                id: output_path
+                size_hint_x: 0.8
+                text: root.output_path
+                on_text: root.output_path = self.text.replace("\\", "/")
+            Button:
+                size_hint_x: 0.2
+                text: "..."
+                on_release:
+                    screen_convert.show_filechooser("output_path", "Select the output path")
+            Button:
+                size_hint_x: 0.1
+                text: "TMP"
+                background_color: 0, 0.4, 0.5, 1
+                on_release:
+                    root.output_path = root.manager.get_tmpdir()
+        BoxLayout:
+            size_hint_y: 0.1
+            size_hint_max_y: dp(50)
+            SettingsLabel:
+                text: "Resize images"
+                width: dp(140)
+            LCheckBox:
+                id: resize_img
+                active: False
+            SettingsLabel:
+                text: "Width [px]"
+                width: dp(100)
+            SettingsInput:
+                size_hint_x: 
+                id: resize_img_size_x
+                text: str(root.resize_img_size_x)
+            SettingsLabel:
+                text: "Height [px]"
+                width: dp(100)
+            SettingsInput:
+                size_hint_x: 
+                id: resize_img_size_y
+                text: str(root.resize_img_size_y)
+        BoxLayout:
+            size_hint_y: 0.1
+            size_hint_max_y: dp(50)
+            SettingsLabel:
+                text: "Convert to .mp4"
+                width: dp(140)
+            LCheckBox:
+                id: convert2mp4
+                active: True
+            SettingsLabel:
+                text: "Convert to .webm"
+                width: dp(140)
+            LCheckBox:
+                id: convert2webm
+            SettingsLabel:
+                text: "Overwrite"
+                width: dp(140)
+            LCheckBox:
+                id: overwrite
+                active: False
+        BoxLayout:
+            size_hint_y: 0.3
+            SettingsLabel:
+                text: "Source images\nextensions"
+                width: dp(140)
+            TCRecycleView:
+                id: img_src_ext_list
+            SettingsLabel:
+                text: "Source videos\nextensions"
+                width: dp(140)
+            TCRecycleView:
+                id: vid_src_ext_list                
+        HSeparator:
+            height: dp(5)
+        BoxLayout:
+            size_hint_y: 0.1
+            size_hint_max_y: dp(70)
+            Button:
+                text: "Run"
+                on_press: root.run()
+            Button:
+                size_hint_x: 0.2
+                background_color: 1.0, 0.0, 0.0, 1.0
+                text: "Stop"
+                on_press: root.stop_thread_convert()
+            Button:
+                size_hint_x: 0.2
+                background_color: 0.0, 0.4, 0.5, 1.0
+                text: "Help"
+                on_press: root.manager.show_help()
+        HSeparator:
+            height: dp(5)
+        BoxLayout:
+            orientation: "vertical"
+            size_hint_y: 0.2
+            BoxLayout:
+                id: progress_bar
+                size_hint_y: 0.5
+            Label:
+                size_hint_y: 0.5
+                font_size: "20"
+                text: root.progress_msg
+        HSeparator:
+            height: dp(10)
+    # END GRID
+
+                
+### ---------------------------------------------------------- ###
+### THE PACKAGE SCREEN
+### ---------------------------------------------------------- ###
+
+
+<PackageScreen>:
+    name: "screen_package"
+    id: screen_package
+    img_ext: img_ext_list
+    vid_ext: vid_ext_list
+    collections: collections_list
+    delete_collections: delete_collections
+    # BEGIN GRID
+    GridLayout:
+        rows: 14
+        spacing: dp(10)
+        HSeparator:
+            height: dp(10)
+        Label:
+            text_size: self.size
+            padding: dp(10), dp(10)
+            size_hint_y: 0.1
+            font_size: "30"
+            valign: "top"
+            halign: "left"
+            text: "Create your data package!"
+        Label:
+            markup: True
+            text_size: self.size
+            padding: dp(10), dp(5)
+            size_hint_y: 0.2
+            size_hint_max_y: dp(100)
+            font_size: "20"
+            valign: "top"
+            halign: "left"
+            text: "Be sure that you have a proper data structure in your [b]Media root[/b] directory. You should see names of your collections (sub-directories of [b]Media root[/b]) in the form below and be able to select those collections you want to include in your data package. If you have not yet uploaded [b]deployments[/b] table to a server you can use the button [b]Get DT[/b] to generate a template of this table based on provided data structure (be sure to look at this table before uploading it to a server!)."
+        HSeparator:
+            height: dp(5)
+        BoxLayout:
+            size_hint_y: 0.1
+            size_hint_max_y: dp(50)
+            SettingsLabel:
+                width: dp(160)
+                text: "Media root"
+            SettingsInput:
+                id: media_root
+                size_hint_x: 0.8
+                text: root.media_root
+                on_text: root.media_root = self.text.replace("\\", "/")
+            Button:
+                size_hint_x: 0.2
+                text: "..."
+                on_release:
+                    root.show_filechooser("media_root", "Select the media root")
+        BoxLayout:
+            size_hint_y: 0.1
+            size_hint_max_y: dp(50)
+            SettingsLabel:
+                width: dp(160)
+                text: "Output path"
+            SettingsInput:
+                id: output_path
+                size_hint_x: 0.8
+                text: root.output_path
+                on_text: root.output_path = self.text.replace("\\", "/")
+            Button:
+                size_hint_x: 0.2
+                text: "..."
+                on_release:
+                    root.show_filechooser("output_path", "Select the output path")
+            Button:
+                size_hint_x: 0.1
+                text: "TMP"
+                background_color: 0, 0.4, 0.5, 1
+                on_release:
+                    root.output_path = root.manager.get_tmpdir()
+        BoxLayout:
+            size_hint_y: 0.1
+            size_hint_max_y: dp(50)
+            SettingsLabel:
+                width: dp(160)
+                text: "Package name\nprefix"
+            SettingsInput:
+                id: package_name
+                size_hint_x: 0.8
+                text: root.package_name
+                on_text: root.package_name = self.text.replace(" ", "_")
+                hint_text: "optional"
+        BoxLayout:
+            size_hint_y: 0.3
+            SettingsLabel:
+                text: "Collections"
+                width: dp(160)
+            TCRecycleView:
+                id: collections_list
+            SettingsLabel:
+                text: "Delete collections\nwhen package is ready"
+                width: dp(180)
+            LCheckBox:
+                id: delete_collections
+                active: False
+        BoxLayout:
+            size_hint_y: 0.3
+            SettingsLabel:
+                text: "Source images\nextensions"
+                width: dp(160)
+            TCRecycleView:
+                id: img_ext_list
+            SettingsLabel:
+                text: "Source videos\nextensions"
+                width: dp(160)
+            TCRecycleView:
+                id: vid_ext_list                
+        HSeparator:
+            height: dp(5)
+        BoxLayout:
+            size_hint_y: 0.1
+            size_hint_max_y: dp(70)
+            Button:
+                text: "Validate"
+                on_press: root.thread_validate()
+            Button:
+                text: "Run"
+                on_press: root.run()
+            Button:
+                size_hint_x: 0.2
+                background_color: 0.0, 0.4, 0.5, 1.0
+                text: "Help"
+                on_press: root.manager.show_help()
+            Button:
+                size_hint_x: 0.2
+                background_color: 0.0, 0.4, 0.5, 1.0
+                text: "Get DT"
+                on_press: root.thread_get_deployments_csv_template()
+        HSeparator:
+            height: dp(5)
+        BoxLayout:
+            orientation: "vertical"
+            size_hint_y: 0.2
+            BoxLayout:
+                id: progress_bar
+                size_hint_y: 0.5
+            Label:
+                size_hint_y: 0.5
+                font_size: "20"
+                text: root.progress_msg
+        HSeparator:
+            height: dp(10)
+    # END GRID
+
+    
+### ---------------------------------------------------------- ###
+### THE UPLOAD SCREEN
+### ---------------------------------------------------------- ###
+
+
+<UploadScreen>:
+    name: "screen_upload"
+    id: screen_upload
+    # BEGIN GRID
+    GridLayout:
+        rows: 14
+        spacing: dp(10)
+        HSeparator:
+            height: dp(10)
+        Label:
+            text_size: self.size
+            padding: dp(10), dp(10)
+            size_hint_y: 0.1
+            font_size: "30"
+            valign: "top"
+            halign: "left"
+            text: "Upload your data package to Trapper!"
+        Label:
+            markup: True
+            text_size: self.size
+            padding: dp(10), dp(10)
+            size_hint_y: 0.2
+            size_hint_max_y: dp(100)
+            font_size: "20"
+            valign: "top"
+            halign: "left"
+            text: "Please, be aware that in the current version the possibility to [b]re-sume[/b] the upload when you lost your internet connection is experimental."        
+        HSeparator:
+            height: dp(5)
+        BoxLayout:
+            size_hint_y: 0.1
+            size_hint_max_y: dp(50)
+            SettingsLabel:
+                width: dp(160)
+                text: "Data package\n(ZIP file)"
+            SettingsInput:
+                id: data_package_zip
+                size_hint_x: 0.8
+                text: root.data_package_zip
+                on_text: root.data_package_zip = self.text.replace("\\", "/")
+            Button:
+                size_hint_x: 0.2
+                text: "..."
+                on_release:
+                    root.show_filechooser("data_package_zip", "Select the data package")
+        BoxLayout:
+            size_hint_y: 0.1
+            size_hint_max_y: dp(50)
+            SettingsLabel:
+                width: dp(160)
+                text: "Package spec\n(YAML file)"
+            SettingsInput:
+                id: data_package_yaml
+                size_hint_x: 0.8
+                text: root.data_package_yaml
+                on_text: root.data_package_yaml = self.text.replace("\\", "/")
+            Button:
+                size_hint_x: 0.2
+                text: "..."
+                on_release:
+                    root.show_filechooser("data_package_yaml", "Select the yaml file")
+        BoxLayout:
+            size_hint_y: 0.1
+            size_hint_max_y: dp(50)
+            SettingsLabel:
+                size_hint_x: 0.5
+                text: "[b]Trigger automatic collection processing when files are successfully uploaded to TRAPPER server[/b]"
+            Switch:
+                id: trigger_processing
+                size_hint_x: 0.1
+                active: root.trigger_processing
+        BoxLayout:
+            size_hint_y: 0.1
+            size_hint_max_y: dp(50)
+            SettingsLabel:
+                size_hint_x: 0.5
+                text: "Remove uploaded ZIP file after collection processing"
+            Switch:
+                id: trigger_processing_remove_zip
+                size_hint_x: 0.1
+                active: root.trigger_processing_remove_zip
+        HSeparator:
+            height: dp(5)
+        BoxLayout:
+            size_hint_y: 0.1
+            size_hint_max_y: dp(70)
+            Button:
+                text: "Upload (new)"
+                on_press: root.upload(resume=False)
+            Button:
+                text: "Upload (resume)"
+                on_press: root.upload(resume=True)
+            Button:
+                size_hint_x: 0.2
+                background_color: 1.0, 0.0, 0.0, 1.0
+                text: "Stop"
+                on_press: root.stop_thread_upload()
+            Button:
+                size_hint_x: 0.2
+                background_color: 0.0, 0.4, 0.5, 1.0
+                text: "Help"
+                on_press: root.manager.show_help()
+        HSeparator:
+            height: dp(5)
+        BoxLayout:
+            orientation: "vertical"
+            size_hint_y: 0.2
+            BoxLayout:
+                id: progress_bar
+                size_hint_y: 0.5
+            Label:
+                size_hint_y: 0.5
+                font_size: "20"
+                text: root.progress_msg
+        HSeparator:
+            height: dp(10)
+    # END GRID
+
+    
+### ---------------------------------------------------------- ###
+### THE SCREEN MANAGER
+### ---------------------------------------------------------- ###
+
+    
+<TrapperClientScreenManager>:
+    id: screen_manager
+    screen_main: screen_main
+    screen_settings: screen_settings
+    screen_convert: screen_convert
+
+    MainScreen:
+        id: screen_main
+        name: "main"
+        manager: screen_manager
+
+    SettingsScreen:
+        id: screen_settings
+        name: "settings"
+        manager: screen_manager
+
+    ConvertScreen:
+        id: screen_convert
+        name: "convert"
+        manager: screen_manager
+
+    PackageScreen:
+        id: screen_package
+        name: "package"
+        manager: screen_manager
+
+    UploadScreen:
+        id: screen_upload
+        name: "upload"
+        manager: screen_manager
+
+        
